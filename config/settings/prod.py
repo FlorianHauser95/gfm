@@ -2,11 +2,11 @@ from .base import *
 
 DEBUG = False
 
-ALLOWED_HOSTS = ["grubhebtab.de"]
+ALLOWED_HOSTS = ["grubhebtab.de","www.grubhebtab.de"]
 
 # Django läuft unter /app/
-FORCE_SCRIPT_NAME = "/app"
-STATIC_URL = "/app/static/"
+FORCE_SCRIPT_NAME = "/gfm"
+STATIC_URL = "/gfm/static/"
 
 # Reverse Proxy / SSL
 USE_X_FORWARDED_HOST = True
@@ -17,7 +17,7 @@ SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True
 
-CSRF_TRUSTED_ORIGINS = ["https://grubhebtab.de"]
+CSRF_TRUSTED_ORIGINS = ["https://grubhebtab.de","https://www.grubhebtab.de"]
 
 # Security Headers (nach Testphase ggf. hochdrehen)
 SECURE_CONTENT_TYPE_NOSNIFF = True
