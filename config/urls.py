@@ -4,10 +4,10 @@ from django.urls import path, include
 from gfm.views import TicketsListView, TicketImportView
 
 urlpatterns = [
-    path("gfm/admin/", admin.site.urls),
+    path("admin/", admin.site.urls),
 
-    path("gfm/", include("gfm.urls")),
+    path("", include("gfm.urls")),
 
-    path("gfm/tickets/", TicketsListView.as_view(), name="tickets_list"),
-    path("gfm/tickets/import/", TicketImportView.as_view(), name="import"),
+    path("tickets/", TicketsListView.as_view(), name="tickets_list"),
+    path("tickets/import/", TicketImportView.as_view(), name="import"),
 ]
