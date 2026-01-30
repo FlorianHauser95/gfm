@@ -1,0 +1,43 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# --- Django ---
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+# Falls du statische Dateien lokal sammelst:
+static/
+# Aber NICHT die Quelldateien deiner Apps (meistens unter assets/ oder app/static/)
+
+# --- Vertrauliche Daten ---
+.env
+*.pot
+*.pyg
+
+# --- Editoren & System ---
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# --- Log-Dateien ---
+*.log
