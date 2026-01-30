@@ -1,0 +1,62 @@
+{% extends "shared/base_list.html" %}
+{% load crispy_forms_tags %}
+
+{% block list_header_extra %}
+
+    {# Import-Button #}
+    {% if request.user.is_staff %}
+        <div class="d-flex justify-content-end mb-3">
+            <a href="{% url 'import' %}"
+               class="btn btn-primary">
+                Tickets importieren
+            </a>
+        </div>
+    {% endif %}
+
+    {# Filter #}
+    <div class="card mb-3">
+        <div class="card-body">
+            {% crispy filter_form %}
+        </div>
+    </div>
+
+{% endblock %}
+
+{# Tickets sollen hier erstmal nur angezeigt werden -> kein Create #}
+{% block create_url %}{% endblock %}
+
+{% block list_item_content %}
+    <div class="d-flex flex-column position-static">
+        <span class="fw-bold">
+            {# Die Klasse 'stretched-link' macht das gesamte Elternelement klickbar #}
+            <a class="text-decoration-none stretched-link" href="{% url 'ticket_participation' item.ticket_uuid %}">
+                {{ item.name }}
+            </a>
+        </span>
+
+        <small class="text-muted">
+            {{ item.email }}
+            · {{ item.event.name }} ({{ item.event.date|date:"d.m.Y" }})
+        </small>
+
+        {% if item.comment %}
+            <small class="text-muted">
+                {{ item.comment|truncatechars:120 }}
+            </small>
+        {% endif %}
+
+        <small class="text-muted">
+            UUID: <span class="font-monospace">{{ item.ticket_uuid }}</span>
+        </small>
+    </div>
+
+    <div class="col-12 col-md-4 d-flex justify-content-md-end align-items-center" style="position: relative; z-index: 2;">
+        <div class="d-flex align-items-center justify-content-end w-100">
+            {% if item.is_paid %}
+                <span class="badge text-bg-success">Bezahlt</span>
+            {% else %}
+                <span class="badge text-bg-danger">Registriert</span>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

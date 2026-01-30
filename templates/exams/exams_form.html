@@ -1,0 +1,13 @@
+{% extends "shared/form.html" %}
+{% load static %}
+
+{% block form_title %}
+    {{ block.super }}
+    {% with type_code=form.fields.type.initial %}
+        {% include "exams/partials/type_indicator.html" with type=type_code label=object.get_type_display|default:type_code %}
+    {% endwith %}
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'exams/js/forms.js' %}"></script>
+{% endblock %}

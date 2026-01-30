@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags crispy_forms_field %}
+{% block title %}Benotung{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 m-0">Benotung – {{ exam }}</h1>
+</div>
+
+<form method="post">
+  {% csrf_token %}
+  {{ formset.management_form }}
+
+  <div class="card">
+    <div class="list-group list-group-flush">
+      {% for form in formset.forms %}
+        <div class="list-group-item d-flex justify-content-between align-items-center">
+          <div>
+            {% if exam.type == "written" %}
+              <strong>Teilnahmeschlüssel:</strong> {{ form.instance.participationKey }}<br>
+            {% else %}
+              <strong>Teilnehmer:</strong> {{ form.instance.user.first_name }} {{ form.instance.user.last_name }}<br>
+            {% endif %}
+          </div>
+
+          <div class="d-flex align-items-center gap-2">
+            {{ form.id }}
+            {% crispy_field form.grade %}
+          </div>
+        </div>
+      {% empty %}
+        <div class="list-group-item">Keine Anmeldungen zu dieser Prüfung vorhanden.</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="mt-3 d-flex justify-content-end">
+    <button type="submit" class="btn btn-primary">Speichern</button>
+  </div>
+</form>
+{% endblock %}

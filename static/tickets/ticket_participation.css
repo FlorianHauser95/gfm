@@ -1,0 +1,60 @@
+/* Container Anpassung für die Buttons */
+.touch-friendly-select .form-check {
+    padding-left: 0; /* Bootstrap Reset */
+    margin-bottom: 10px;
+}
+
+/* 1. Die eigentliche Checkbox unsichtbar machen */
+.touch-friendly-select .form-check-input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    height: 0;
+    width: 0;
+}
+
+/* 2. Das Label als großen Button stylen */
+.touch-friendly-select .form-check-label {
+    display: block;
+    width: 100%;
+    padding: 15px 20px; /* Viel Platz für dicke Daumen */
+    border: 2px solid #dc3545; /* Rot für "nicht ausgewählt" */
+    color: #dc3545;
+    background-color: white;
+    border-radius: 8px;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* Hover-Effekt (optional für Desktop) */
+.touch-friendly-select .form-check-label:hover {
+    background-color: #fff5f5;
+}
+
+/* 3. ZUSTAND: ANGEHAKT (CHECKED) -> Grün */
+.touch-friendly-select .form-check-input:checked + .form-check-label {
+    background-color: #198754; /* Bootstrap Success Green */
+    border-color: #198754;
+    color: white;
+    box-shadow: 0 4px 6px rgba(25, 135, 84, 0.3);
+}
+
+/* 4. ZUSTAND: DISABLED (Bereits gebucht) -> Grau */
+/* Wir stylen hier auch dein manuelles HTML für gelockte Items */
+.touch-friendly-locked .form-check-input {
+    display: none;
+}
+.touch-friendly-locked .form-check-label {
+    display: block;
+    width: 100%;
+    padding: 15px 20px;
+    background-color: #e9ecef;
+    border: 1px solid #dee2e6;
+    color: #6c757d;
+    border-radius: 8px;
+    text-align: center;
+    cursor: not-allowed;
+}

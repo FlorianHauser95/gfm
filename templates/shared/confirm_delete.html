@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}{% block delete_title %}Löschen bestätigen{% endblock %}{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-danger">
+                <div class="card-body">
+                    <h1 class="h4 text-danger">{% block header %}{{ object }} löschen{% endblock %}</h1>
+                    <p>
+                        {% block message %}
+                            Soll <strong>{{ object }}</strong> wirklich unwiderruflich gelöscht werden?
+                        {% endblock %}
+                    </p>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-danger" type="submit">Endgültig löschen</button>
+                            <a class="btn btn-outline-secondary"
+                               href="{{ cancel_url }}">
+                                Abbrechen
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'tickets/ticket_participation.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div class="container py-3">
+        {# Header bleibt als Kontext-Info erhalten #}
+        <header class="d-flex justify-content-between align-items-start mb-4">
+            <div>
+                <h1 class="h4 mb-1">{{ title }}</h1>
+                <p class="text-muted mb-0">
+                    Email: <strong>{{ email }}</strong> ·
+                    Ticket: <code class="small">{{ source_ticket.ticket_uuid }}</code>
+                </p>
+            </div>
+            <a class="btn btn-sm btn-outline-secondary" href="{% url 'tickets_list' %}?q={{ email }}">Zurück</a>
+        </header>
+
+        {# Die gesamte Magie passiert hier: #}
+        {% crispy form %}
+
+        <div style="height: 80px;"></div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'tickets/ticket_participation.js' %}"></script>
+{% endblock %}

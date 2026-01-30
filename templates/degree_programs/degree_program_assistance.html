@@ -1,0 +1,22 @@
+{% extends "shared/base_list.html" %}
+
+{% block title %}Studiengangsassistenzen - {{ program.name }}{% endblock %}
+
+{% block list_title %}Studiengangsassistenzen - {{ program.name }}{% endblock %}
+
+{% block create_url %}{% url 'degree_assistance_selection' pk=program.pk %}{% endblock %}
+{% block create_label %}Neue Studiengangsassistenz zuweisen{% endblock %}
+
+{% block list_item_content %}
+    <div>
+        <strong>{{ item.full_name }}</strong>
+    </div>
+    <a class="btn btn-sm btn-outline-danger"
+       href="{% url 'degreeprogram_assistance_delete' program_id=program.pk user_id=item.id %}">
+        Entfernen
+    </a>
+{% endblock %}
+
+{% block empty_message %}Noch keine Studiengangsassistenz zugewiesen.{% endblock %}
+
+{% block cancel_url %}{% url 'degree_list' %}{% endblock %}

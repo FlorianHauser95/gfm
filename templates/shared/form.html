@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {% if object %}{{ object }} bearbeiten{% else %}{{ title_singular }} anlegen{% endif %}
+{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h1 class="h4 mb-4">
+                        {% block form_title %}
+                            {% if object %}{{ object }} bearbeiten{% else %}{{ title_singular }} anlegen{% endif %}
+                        {% endblock %}
+                    </h1>
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        {% crispy form %}
+
+                        <div class="mt-4 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">Speichern</button>
+                            <a class="btn btn-outline-secondary"
+                               href="{{ cancel_url }}">
+                                Abbrechen
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

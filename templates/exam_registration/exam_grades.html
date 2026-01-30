@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Noten{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 m-0">Noten - {{ exam.title }}</h1>
+</div>
+<div class="card">
+  <div class="list-group list-group-flush">
+    {% for exam_reg in exam_registrations %}
+      {% if exam_reg.exam.type == "written" %}
+      <div class="list-group-item d-flex justify-content-between align-items-center">
+        <span>Teilnehmercode: {{ exam_reg.participationKey }} Note: {{ exam_reg.grade }}</span>
+      </div>
+      {% else %}
+      <div class="list-group-item d-flex justify-content-between align-items-center">
+          <span>
+            {{ exam_reg.user.first_name }} {{ exam_reg.user.last_name }} Note: {{ exam_reg.grade }}
+          </span>
+      </div>
+        {% endif %}
+    {% empty %}
+      <div class="list-group-item">Keine Noten vorhanden.</div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

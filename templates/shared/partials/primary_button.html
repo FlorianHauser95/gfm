@@ -1,0 +1,9 @@
+<a class="btn btn-sm btn-primary d-flex align-items-center justify-content-center"
+   href="{{ url }}">
+    {% if icon %}
+        <i class="bi {{ icon }} {% if label %}me-2{% endif %}"></i>
+    {% endif %}
+    {% if label %}
+        <span>{{ label }}</span>
+    {% endif %}
+</a>

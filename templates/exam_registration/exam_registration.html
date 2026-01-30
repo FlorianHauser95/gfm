@@ -1,0 +1,38 @@
+{% extends "exams/exams_list.html" %}
+{% load crispy_forms_tags %}
+{% block create_button %}{% endblock %}
+{% block list_header_extra %}
+    <div class="card mb-3">
+        <div class="card-body">
+            {% crispy filter_form %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block list_item_button_area %}
+    {% if item.id in registered_exam_ids %}
+        <form method="post" action="{% url 'cancel_registration' item.id %}" class="w-100">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <button type="submit" class="btn btn-sm btn-outline-danger w-100">
+                <i class="bi bi-x-circle me-2"></i> Abmelden
+            </button>
+            <div class="alert alert-light py-1 mt-2 mb-0 text-center">
+        <small class="text-muted">Teilnahmecode</small><br>
+        <strong class="fs-6">{{ item.exam_registration.participationKey }}</strong>
+    </div>
+        </form>
+    {% elif not item.registration_open %}
+        <button class="btn btn-sm btn-light border w-100" disabled>Frist Ende</button>
+    {% elif item.registration_count >= item.max_capacity %}
+        <button class="btn btn-sm btn-outline-danger w-100" disabled>Voll</button>
+    {% else %}
+        <form method="post" action="{% url 'register_for_exam' item.id %}" class="w-100">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <button type="submit" class="btn btn-sm btn-primary w-100">
+                <i class="bi bi-plus-circle me-2"></i> Anmelden
+            </button>
+        </form>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="bi bi-file-earmark-spreadsheet"></i>
+                        Teilnehmer importieren
+                    </h3>
+                    <small>für Prüfung: <strong>{{ exam }}</strong></small>
+                </div>
+
+                <div class="card-body">
+
+                    <div class="alert alert-info border-info" role="alert">
+                        <h5 class="alert-heading"><i class="bi bi-info-circle-fill"></i> Format-Vorgabe</h5>
+                        <p class="mb-0">Benötigte Spalten in der CSV:</p>
+                        <code class="d-block bg-light p-2 rounded border mt-2">
+                            {{ csv_format }}
+                        </code>
+                    </div>
+
+                    {% crispy form %}
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

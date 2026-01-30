@@ -1,0 +1,16 @@
+{% extends "exams/exams_list.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Alle Prüfungen{% endblock %}
+
+{% block list_title %}Alle Prüfungen{% endblock %}
+
+{% block list_header_extra %}
+    <div class="card mb-3">
+        <div class="card-body">
+            {% crispy filter_form %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block create_button %}{% endblock %}

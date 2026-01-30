@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title_plural }}{% endblock %}
+
+{% block content %}
+    {# header area #}
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-3 gap-2">
+        <h1 class="h3 m-0">{% block list_title %}{{ title_plural }}{% endblock %}</h1>
+        {% block create_button %}
+            <a class="btn btn-primary" href="{% block create_url %}{% endblock %}">
+                {% block create_label %}
+                    {% if title_singular %}
+                        Neuen {{ title_singular }} anlegen
+                    {% else %}
+                        Neu anlegen
+                    {% endif %}
+                {% endblock %}
+            </a>
+        {% endblock %}
+    </div>
+
+    {% block list_header_extra %}{% endblock %}
+
+    {# list area #}
+    <div class="card">
+        <div class="list-group list-group-flush">
+            {% for item in object_list %}
+                <div class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+                    {% block list_item_content %}{% endblock %}
+                </div>
+                {% empty %}
+                <div class="list-group-item">
+                    {% block empty_message %}
+                        {% if title_plural %}
+                            Noch keine {{ title_plural }} angelegt.
+                        {% else %}
+                            Keine Einträge gefunden.
+                        {% endif %}
+                    {% endblock %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {# footer area #}
+    <div class="d-flex justify-content-between align-items-center mt-3 mb-3 gap-2">
+        {% block cancel_button %}
+            <div>
+                <a class="btn btn-outline-secondary"
+                   href="{% block cancel_url %}{% url 'home' %}{% endblock %}">Zurück</a>
+            </div>
+        {% endblock %}
+
+        {% if is_paginated %}
+            <div>
+                <ul class="pagination m-0">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="{% querystring page=page_obj.previous_page_number %}">Vorherige</a>
+                        </li>
+                    {% endif %}
+                    <li class="page-item disabled">
+                        <span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+                    </li>
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{% querystring page=page_obj.next_page_number %}">Nächste</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

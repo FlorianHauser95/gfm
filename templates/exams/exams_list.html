@@ -1,0 +1,68 @@
+{% extends "shared/base_list.html" %}
+
+{% block list_item_content %}
+    <div class="row w-100 align-items-center">
+        <div class="col-12 col-md-8 mb-3 mb-md-0">
+            <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
+                <strong>{{ item.title }}</strong>
+                {% include "exams/partials/type_indicator.html" with type=item.type %}
+                {% block list_item_title_extended %}{% endblock %}
+            </div>
+
+            <div class="text-muted small">
+                <div class="mb-1 d-flex align-items-center">
+                    <i class="bi bi-calendar3 me-2 text-secondary"></i>
+                    <span>
+                        {{ item.exam_start|date:"d.m.Y H:i" }} Uhr
+                        {% if item.duration_minutes %}
+                            <span class="ms-1">({{ item.duration_minutes }} Min.)</span>
+                        {% endif %}
+                    </span>
+                </div>
+
+                {% if item.is_virtual %}
+                    <div class="mb-1 d-flex align-items-center text-primary">
+                        <i class="bi bi-laptop me-2"></i>
+                        <span><strong>Virtuell / Online</strong> {% if item.virtual_url %}(
+                            <a href="{{ item.virtual_url }}" target="_blank" class="text-decoration-none">Link</a>
+                            ){% endif %}</span>
+                    </div>
+                {% elif item.room %}
+                    <div class="mb-1 d-flex align-items-center">
+                        <i class="bi bi-geo-alt me-2 text-secondary"></i>
+                        <span>Raum: {{ item.room.name }}</span>
+                    </div>
+                {% endif %}
+
+                {% if item.registration_deadline %}
+                    <div class="mb-1 d-flex align-items-center">
+                        <i class="bi bi-clock-history me-2 text-secondary"></i>
+                        <span>Anmeldeschluss: {{ item.registration_deadline|date:"d.m.Y H:i" }} Uhr</span>
+                    </div>
+                {% endif %}
+
+                {% if item.program %}
+                    <div class="mb-1 d-flex align-items-center">
+                        <i class="bi bi-mortarboard me-2 text-secondary"></i>
+                        <span>{{ item.program.name }} <span class="mx-1">·</span> {{ item.semester }}. Semester</span>
+                    </div>
+                {% endif %}
+
+                {% if item.examiner_user %}
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-person-badge me-2 text-secondary"></i>
+                        <span>Prüfer/in: {{ item.examiner_user.full_name|default:item.examiner_user }}</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4 d-flex justify-content-md-end">
+            <div class="btn-group w-100 w-md-auto shadow-sm">
+                {% block list_item_button_area %}
+
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

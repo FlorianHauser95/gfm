@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Anmeldungen bearbeiten{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 m-0">Anmeldungen – {{ exam }}</h1>
+
+  <a href="{% url 'exam_registration_import' exam.pk %}" class="btn btn-primary">
+    <i class="bi bi-file-earmark-spreadsheet"></i> Teilnehmer importieren (CSV)
+  </a>
+</div>
+
+<div class="row g-3">
+  <div class="col-12 col-lg-6">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="fw-semibold">Angemeldete Studierende</span>
+        <span class="badge text-bg-primary">{{ registered|length }}</span>
+      </div>
+      <div class="list-group list-group-flush">
+        {% for reg in registered %}
+          <div class="list-group-item d-flex justify-content-between align-items-center">
+            <div class="me-3">
+              <div class="fw-semibold">
+                {{ reg.final_first_name }} {{ reg.final_last_name }}
+              </div>
+              {% if reg.participationKey %}
+                <small class="text-muted">Teilnahmeschlüssel: {{ reg.participationKey }}</small>
+              {% endif %}
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <form action="{% url 'cancel_registration_assistant' pk=reg.pk %}" method="post" class="d-inline">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-outline-danger btn-sm">Abmelden</button>
+              </form>
+            </div>
+          </div>
+        {% empty %}
+          <div class="list-group-item">Keine Anmeldungen zu dieser Prüfung vorhanden.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-lg-6">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="fw-semibold">Berechtigt - Nicht angemeldet</span>
+        <span class="badge text-bg-secondary">{{ unregistered|length }}</span>
+      </div>
+
+      <div class="list-group list-group-flush">
+        {% for unreg in unregistered %}
+          <div class="list-group-item d-flex justify-content-between align-items-center">
+            <div class="me-3">
+              <div class="fw-semibold">
+                {{ unreg.first_name }} {{ unreg.last_name }}
+              </div>
+            </div>
+            <form method="post" action="{% url 'register_for_exam_admin' exam.id unreg.id %}" class="m-0">
+            {% csrf_token %}
+                <button type="submit" class="btn btn-outline-primary btn-sm">Anmelden</button>
+            </form>
+        </div>
+        {% empty %}
+          <div class="list-group-item">Alle berechtigten Studierenden sind angemeldet.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mt-3 d-flex justify-content-end">
+  <a href="{% url 'exams_assistant' %}" class="btn btn-secondary">Zurück</a>
+</div>
+{% endblock %}

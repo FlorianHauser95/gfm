@@ -1,0 +1,12 @@
+<p class="form-text mt-2 animate__animated animate__fadeIn">
+    {% if too_small %}
+        <span class="text-danger fw-bold">
+            <i class="bi bi-exclamation-triangle"></i> Raum zu klein!
+        </span>
+    {% else %}
+        <span class="text-success">
+            <i class="bi bi-check-circle"></i> Raumgröße ausreichend.
+        </span>
+    {% endif %}<br>
+    Eingeschriebene im Studiengang: {{ enrolled }} · Raumkapazität: {{ capacity }}
+</p>
