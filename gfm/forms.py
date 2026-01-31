@@ -229,3 +229,36 @@ class ParticipationSelectionForm(forms.Form):
             cleaned_data['no_ticket_events'] = cleaned_data['no_ticket_events_dynamic']
 
         return cleaned_data
+
+class ParticipantFilterForm(forms.Form):
+    event = forms.ModelChoiceField(
+        queryset=Event.objects.all().order_by("-date", "name"),
+        required=False,
+        label="Event",
+        empty_label=None,
+    )
+
+    q = forms.CharField(
+        required=False,
+        label="Suche",
+        widget=forms.TextInput(attrs={"placeholder": "Name, E-Mail"})
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.helper = FormHelper()
+        self.helper.form_method = "get"
+        self.helper.form_show_labels = True
+        self.helper.layout = Layout(
+            Row(
+                Column("event", css_class="col-12 col-md-4"),
+                Column("q", css_class="col-12 col-md-5"),
+            ),
+            Row(
+                Column(
+                    Submit("submit", "Filtern", css_class="btn btn-primary"),
+                    css_class="col-12 d-flex justify-content-end",
+                )
+            )
+        )

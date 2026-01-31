@@ -1,0 +1,84 @@
+{# templates/participants/participants_list.html #}
+{% extends "shared/base_list.html" %}
+{% load crispy_forms_tags %}
+
+{% block list_header_extra %}
+
+    {# Filter #}
+    <div class="card mb-3">
+        <div class="card-body">
+            {% crispy filter_form %}
+        </div>
+    </div>
+
+    {# Summary: bezahlt/gesamt #}
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+        <span class="badge text-bg-success">
+            Bezahlt: {{ participants_paid }}
+        </span>
+        <span class="badge text-bg-secondary">
+            Gesamt: {{ participants_total }}
+        </span>
+
+        {# optional: Quote #}
+        {% if participants_total %}
+            <span class="text-muted small">
+                ({{ participants_paid }} / {{ participants_total }})
+            </span>
+        {% endif %}
+    </div>
+
+{% endblock %}
+
+{# Participants sollen hier nur angezeigt werden -> kein Create #}
+{% block create_url %}{% endblock %}
+
+{% block list_item_content %}
+    <div class="d-flex flex-column position-static col-12 col-md-8">
+
+        <span class="fw-bold fs-5 mb-2">
+            {# optional: Link zu Participant-Detail, falls vorhanden #}
+            {# <a class="text-decoration-none stretched-link" href="{% url 'participant_detail' item.pk %}">{{ item.name }}</a> #}
+            {{ item.name }}
+        </span>
+
+        <div class="d-flex align-items-center text-muted small mb-1">
+            <i class="bi bi-envelope me-2" title="E-Mail"></i>
+            <span>{{ item.email }}</span>
+        </div>
+
+        <div class="d-flex align-items-center text-muted small mb-1">
+            <i class="bi bi-calendar-event me-2" title="Event & Datum"></i>
+            <span>{{ item.event.name }} ({{ item.event.date|date:"d.m.Y" }})</span>
+        </div>
+
+        <div class="d-flex align-items-center text-muted small mb-1">
+            <i class="bi bi-cash-coin me-2" title="Betrag"></i>
+            <span>{{ item.amount }} EUR</span>
+        </div>
+
+        {% if item.ticket_id %}
+            <div class="d-flex align-items-center text-muted small">
+                <i class="bi bi-qr-code me-2" title="Ticket UUID"></i>
+                <span class="font-monospace">{{ item.ticket.ticket_uuid }}</span>
+            </div>
+        {% else %}
+            <div class="d-flex align-items-center text-muted small">
+                <i class="bi bi-qr-code me-2" title="Ticket UUID"></i>
+                <span class="fst-italic">Kein Ticket verknüpft</span>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="col-12 col-md-4 d-flex justify-content-md-end align-items-start mt-3 mt-md-0" style="position: relative; z-index: 2;">
+        {% if item.paid_at %}
+            <span class="badge rounded-pill text-bg-success d-flex align-items-center">
+                <i class="bi bi-check-circle-fill me-1"></i> Bezahlt
+            </span>
+        {% else %}
+            <span class="badge rounded-pill text-bg-danger d-flex align-items-center">
+                <i class="bi bi-exclamation-circle-fill me-1"></i> Registriert
+            </span>
+        {% endif %}
+    </div>
+{% endblock %}

@@ -14,7 +14,7 @@ from django.contrib import messages
 from django.urls import reverse
 from django.views.generic.edit import FormView
 
-from .forms import TicketImportForm, ParticipationSelectionForm
+from .forms import TicketImportForm, ParticipationSelectionForm, ParticipantFilterForm
 
 from gfm.forms import TicketFilterForm
 from gfm.models import Ticket, Participant, Event
@@ -118,7 +118,7 @@ class TicketImportView(LoginRequiredMixin, UserPassesTestMixin, FormView):
             return self.form_invalid(form)
 
     def get_success_url(self):
-        return reverse("ticket_list")
+        return reverse("tickets_list")
 
 
 @dataclass(frozen=True)
@@ -288,3 +288,57 @@ class TicketParticipationView(LoginRequiredMixin, RequireAdminRoleMixin, View):
 
         messages.success(request, f"{upserted} Teilnahme(n) gespeichert.")
         return redirect(f"{self.success_url}")
+
+class ParticipantsListView(ListView):
+    template_name = "participants/participants_list.html"
+    paginate_by = 10
+    model = Participant
+
+    def _get_default_event_id(self):
+        today_event = Event.objects.filter(date=timezone.localdate()).first()
+        return today_event.id if today_event else None
+
+    def get_queryset(self):
+        qs = (
+            super()
+            .get_queryset()
+            .select_related("event", "ticket")
+        )
+
+        event_id = self.request.GET.get("event")
+        if event_id is None:
+            event_id = self._get_default_event_id()
+
+        if not event_id:
+            return qs.none()
+
+        qs = qs.filter(event_id=event_id)
+
+        # Suche
+        q = self.request.GET.get("q")
+        if q:
+            qs = qs.filter(
+                models.Q(name__icontains=q) |
+                models.Q(email__icontains=q) |
+                models.Q(ticket__ticket_uuid__icontains=q)
+            )
+
+        return qs.order_by("paid_at", "name")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        form_data = self.request.GET.copy()
+
+        if "event" not in form_data:
+            default_event_id = self._get_default_event_id()
+            if default_event_id:
+                form_data["event"] = default_event_id
+
+        context["filter_form"] = ParticipantFilterForm(form_data)
+
+        qs_all = self.get_queryset()
+        context["participants_total"] = qs_all.count()
+        context["participants_paid"] = qs_all.filter(paid_at__isnull=False).count()
+
+        return context

@@ -44,6 +44,14 @@ def navigation_tiles(request: HttpRequest) -> dict:
                         "nav": True,
                     },
                     {
+                        "title": "Teilnehmer",
+                        "description": "Alle Teilnehmer anzeigen und nach Veranstaltung filtern.",
+                        "icon": "bi-people-fill",
+                        "color": "text-primary",
+                        "url": reverse_lazy("participants_list"),
+                        "nav": True,
+                    },
+                    {
                         "title": "CSV importieren",
                         "description": "CSV-Export vom Eventmanager importieren.",
                         "icon": "bi-cloud-upload",
