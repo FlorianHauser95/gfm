@@ -212,10 +212,10 @@ class TicketParticipationView(LoginRequiredMixin, RequireAdminRoleMixin, View):
         )
 
         return render(request, self.template_name, {
-            "title": "Teilnahme / Zahlung bestätigen",
+            "title": "Teilnahme bestätigen",
             "source_ticket": source_ticket,
             "email": email,
-            "form": form,  # Wir brauchen ticket_groups etc. nicht mehr im Context
+            "form": form,
         })
 
     def post(self, request, ticket_uuid):
@@ -225,7 +225,6 @@ class TicketParticipationView(LoginRequiredMixin, RequireAdminRoleMixin, View):
 
         ticket_groups, no_ticket_events, tickets, events = self._build_viewmodel(email=email)
 
-        # Form mit POST-Daten binden
         form = ParticipationSelectionForm(
             request.POST,
             ticket_groups=ticket_groups,
@@ -241,7 +240,6 @@ class TicketParticipationView(LoginRequiredMixin, RequireAdminRoleMixin, View):
                 "form": form,
             })
 
-        # WICHTIG: Nutze jetzt cleaned_data (durch die Form aggregiert)
         selected_ticket_uuids = set(form.cleaned_data.get("tickets", []))
         selected_no_ticket_event_ids = set(form.cleaned_data.get("no_ticket_events", []))
 
@@ -274,7 +272,7 @@ class TicketParticipationView(LoginRequiredMixin, RequireAdminRoleMixin, View):
                 p.save(update_fields=["event", "email", "name", "paid_at", "amount", "updated_at"])
             upserted += 1
 
-        # 2) No-ticket Teilnahmen (nur Events, die tatsächlich in no_ticket_events angeboten wurden)
+        # 2) No-ticket Teilnahmen
         allowed_no_ticket_event_ids = {str(vm.event.id) for vm in no_ticket_events}
         selected_no_ticket_event_ids = selected_no_ticket_event_ids.intersection(allowed_no_ticket_event_ids)
 

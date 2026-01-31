@@ -107,9 +107,8 @@ class ParticipationSelectionForm(forms.Form):
                     # Standard: Nur der Name
                     label_content = opt.ticket.name
 
-                    # Falls ein Kommentar existiert, fügen wir ihn in neuer Zeile hinzu
+                    # Falls ein Kommentar existiert
                     if opt.ticket.comment:
-                        # format_html sorgt dafür, dass das <br> und <small> auch als HTML interpretiert werden
                         label_content = format_html(
                             "{}<br><small class='fw-normal' style='font-size: 0.85em; opacity: 0.8;'>{}</small>",
                             opt.ticket.name,
@@ -118,8 +117,7 @@ class ParticipationSelectionForm(forms.Form):
 
                     # --- B) Logik für "Bereits gebucht" vs. "Wählbar" ---
                     if opt.checked:
-                        # === BEREITS GEBUCHT (Locked HTML) ===
-                        # Auch hier zeigen wir den Kommentar an
+                        # === BEREITS GEBUCHT ===
                         comment_html = f"<br><small>{opt.ticket.comment}</small>" if opt.ticket.comment else ""
 
                         html_locked = f"""
@@ -134,11 +132,9 @@ class ParticipationSelectionForm(forms.Form):
                                         """
                         self.helper.layout.append(HTML(html_locked))
                     else:
-                        # === NOCH FREI (Selectable) ===
-                        # Wir fügen das formatierte HTML-Label zu den Auswahlmöglichkeiten hinzu
+                        # === NOCH FREI ===
                         selectable_choices.append((opt.ticket.ticket_uuid, label_content))
 
-                # Wenn es wählbare Tickets gibt, fügen wir das Feld hinzu
                 if selectable_choices:
                     field_name = f"group_{group.event.id}"
                     self.fields[field_name] = forms.MultipleChoiceField(
@@ -147,7 +143,6 @@ class ParticipationSelectionForm(forms.Form):
                         required=False,
                         widget=forms.CheckboxSelectMultiple
                     )
-                    # HIER IST DIE WICHTIGE ÄNDERUNG: wrapper_class="touch-friendly-select"
                     self.helper.layout.append(Field(field_name, wrapper_class="mb-0 touch-friendly-select"))
 
                 # Container schließen
@@ -187,9 +182,8 @@ class ParticipationSelectionForm(forms.Form):
                     choices=nt_choices,
                     required=False,
                     widget=forms.CheckboxSelectMultiple,
-                    help_text=""  # Help text stört im Button Layout oft, lieber leer lassen oder drüber rendern
+                    help_text=""
                 )
-                # HIER AUCH: wrapper_class="touch-friendly-select"
                 self.helper.layout.append(Field('no_ticket_events_dynamic', wrapper_class="touch-friendly-select"))
             elif not has_locked_items:
                 self.helper.layout.append(
@@ -197,8 +191,7 @@ class ParticipationSelectionForm(forms.Form):
 
             self.helper.layout.append(HTML('</div></div>'))
 
-        # --- 3. & 4. Sticky Footer (Preis + Buttons kombiniert) ---
-        # Wir definieren das HTML für den Preis separat, damit es übersichtlich bleibt
+        # --- 3. & 4. Sticky Footer ---
         price_html = """
             <div id="price-container" class="alert alert-info text-center fw-bold mb-2 shadow-sm" style="display: none;">
                 Gesamtpreis: <span id="total-price">0</span> €
@@ -209,12 +202,8 @@ class ParticipationSelectionForm(forms.Form):
 
         self.helper.layout.append(
             Div(
-                # Innerer Container, damit Preis und Buttons mittig ausgerichtet sind (wie der Rest der Seite)
                 Div(
-                    # 1. Die Preisanzeige (jetzt Teil des Sticky-Footers)
                     HTML(price_html),
-
-                    # 2. Die Buttons (darunter)
                     Div(
                         HTML(
                             f'<a href="{cancel_url}" class="btn btn-outline-secondary id="btn-cancel" px-3 me-2" style="border-radius: 8px;">Abbrechen</a>'),
@@ -222,9 +211,8 @@ class ParticipationSelectionForm(forms.Form):
                                style="border-radius: 8px;"),
                         css_class="d-flex"
                     ),
-                    css_class="container"  # Hält den Inhalt zentriert
+                    css_class="container"
                 ),
-                # Der äußere Wrapper macht alles "sticky" am unteren Rand
                 css_class="sticky-bottom bg-white border-top py-3 mt-4 start-0 w-100 shadow-lg"
             )
         )
