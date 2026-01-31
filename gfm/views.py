@@ -21,7 +21,7 @@ from gfm.models import Ticket, Participant, Event
 from gfm.permissions import RequireAdminRoleMixin
 
 
-class TicketMixin(LoginRequiredMixin, RequireAdminRoleMixin):
+class TicketMixin(LoginRequiredMixin):
     model = Ticket
     success_url = reverse_lazy("tickets_list")
 
@@ -88,7 +88,7 @@ class TicketsListView(TicketMixin, ListView):
         return context
 
 
-class TicketImportView(LoginRequiredMixin, UserPassesTestMixin, FormView):
+class TicketImportView(LoginRequiredMixin, RequireAdminRoleMixin, FormView):
     template_name = "tickets/ticket_import.html"
     form_class = TicketImportForm
 
@@ -152,7 +152,7 @@ class NoTicketEventVM:
     checked: bool
 
 
-class TicketParticipationView(LoginRequiredMixin, RequireAdminRoleMixin, View):
+class TicketParticipationView(LoginRequiredMixin, View):
     template_name = "tickets/ticket_participation.html"
     success_url = reverse_lazy("tickets_list")
 
@@ -289,7 +289,7 @@ class TicketParticipationView(LoginRequiredMixin, RequireAdminRoleMixin, View):
         messages.success(request, f"{upserted} Teilnahme(n) gespeichert.")
         return redirect(f"{self.success_url}")
 
-class ParticipantsListView(ListView):
+class ParticipantsListView(ListView, LoginRequiredMixin):
     template_name = "participants/participants_list.html"
     paginate_by = 10
     model = Participant
