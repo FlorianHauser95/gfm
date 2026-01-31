@@ -12,9 +12,9 @@ from django.views.generic import ListView
 
 from django.contrib import messages
 from django.urls import reverse
-from django.views.generic.edit import FormView
+from django.views.generic.edit import FormView, CreateView
 
-from .forms import TicketImportForm, ParticipationSelectionForm, ParticipantFilterForm
+from .forms import TicketImportForm, ParticipationSelectionForm, ParticipantFilterForm, ParticipantNoTicketCreateForm
 
 from gfm.forms import TicketFilterForm
 from gfm.models import Ticket, Participant, Event
@@ -342,3 +342,40 @@ class ParticipantsListView(ListView, LoginRequiredMixin):
         context["participants_paid"] = qs_all.filter(paid_at__isnull=False).count()
 
         return context
+
+class ParticipantNoTicketCreateView(CreateView, LoginRequiredMixin):
+    template_name = "participants/participant_create_no_ticket.html"
+    model = Participant
+    form_class = ParticipantNoTicketCreateForm
+
+    def _get_default_event_id(self):
+        today_event = Event.objects.filter(date=timezone.localdate()).first()
+        return today_event.id if today_event else None
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+
+        # Default Event aus GET (wenn du aus Liste kommst) oder "heute"
+        default_event_id = self.request.GET.get("event") or self._get_default_event_id()
+        kwargs["default_event_id"] = str(default_event_id) if default_event_id else None
+        return kwargs
+
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        participant = self.object
+        messages.success(
+            self.request,
+            (
+                f"Teilnehmer „{participant.name}“ wurde erfolgreich angelegt "
+                f"und als bezahlt verbucht "
+                f"({participant.amount:.2f} EUR)."
+            ),
+        )
+
+        return response
+
+    def get_success_url(self):
+        # zurück in Liste; wenn Event gewählt, gleich gefiltert
+        event_id = self.object.event_id
+        return f"{reverse_lazy('participants_list')}?event={event_id}"

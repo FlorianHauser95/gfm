@@ -1,11 +1,14 @@
+from decimal import Decimal
+
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Row, Column, Button, Layout, Submit, HTML, Div, Field
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.html import format_html
 
-from gfm.models import Event
+from gfm.models import Event, Participant
 
 
 class EmailAuthenticationForm(AuthenticationForm):
@@ -230,6 +233,7 @@ class ParticipationSelectionForm(forms.Form):
 
         return cleaned_data
 
+
 class ParticipantFilterForm(forms.Form):
     event = forms.ModelChoiceField(
         queryset=Event.objects.all().order_by("-date", "name"),
@@ -262,3 +266,83 @@ class ParticipantFilterForm(forms.Form):
                 )
             )
         )
+
+class ParticipantNoTicketCreateForm(forms.ModelForm):
+    class Meta:
+        model = Participant
+        fields = ["event", "name", "email", "amount"]
+
+        labels = {
+            "event": "Zug / Veranstaltung",
+            "name": "Name",
+            "email": "E-Mail",
+            "amount": "Preis (EUR)",
+        }
+
+        help_texts = {
+            "email": "Automatisch generierte Dummy-E-Mail (kann geändert werden).",
+            "amount": "Standard: 28,00 EUR (bei Bedarf anpassen).",
+        }
+
+        widgets = {
+            "name": forms.TextInput(attrs={"placeholder": "Vorname Nachname"}),
+            "email": forms.EmailInput(),
+        }
+
+    def __init__(self, *args, default_event_id: str | None = None, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["event"].queryset = Event.objects.all().order_by("-date", "name")
+
+        self.fields["amount"].initial = Decimal("28.00")
+
+        if not default_event_id:
+            today_event = Event.objects.filter(date=timezone.localdate()).first()
+            default_event_id = str(today_event.id) if today_event else None
+
+        if default_event_id and not self.initial.get("event"):
+            self.initial["event"] = default_event_id
+
+        # Dummy-E-Mail
+        if not self.initial.get("email"):
+            ts = timezone.now().strftime("%Y%m%d-%H%M%S")
+            self.initial["email"] = f"teilnehmer-{ts}@example.invalid"
+
+        self.helper = FormHelper()
+        self.helper.form_method = "post"
+        self.helper.layout = Layout(
+            Row(
+                Column("event", css_class="col-12 col-md-6"),
+                Column("email", css_class="col-12 col-md-6"),
+                css_class="g-2",
+            ),
+            Row(
+                Column("name", css_class="col-12"),
+                css_class="g-2",
+            ),
+            Row(
+                Column("amount", css_class="col-12 col-md-6"),
+                css_class="g-2",
+            ),
+            Row(
+                Column(Submit("submit", "Teilnehmer anlegen", css_class="btn btn-primary")),
+            ),
+        )
+
+    def clean(self):
+        cleaned = super().clean()
+
+        if getattr(self.instance, "ticket_id", None):
+            self.add_error(None, "Dieses Formular ist nur für Teilnehmer ohne Ticket gedacht.")
+
+        return cleaned
+
+    def save(self, commit=True):
+        obj = super().save(commit=False)
+
+        obj.ticket = None
+        obj.paid_at = timezone.localdate()
+
+        if commit:
+            obj.save()
+        return obj

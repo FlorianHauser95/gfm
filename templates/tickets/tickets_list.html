@@ -12,8 +12,9 @@
 
 {% endblock %}
 
-{# Tickets sollen hier erstmal nur angezeigt werden -> kein Create #}
-{% block create_url %}{% endblock %}
+{% block create_url %}
+    {% url 'participant_create_no_ticket' %}?event={{ request.GET.event }}
+{% endblock %}
 
 {% block list_item_content %}
     <div class="d-flex flex-column position-static col-12 col-md-8">
