@@ -289,7 +289,20 @@ class TicketParticipationView(LoginRequiredMixin, View):
         messages.success(request, f"{upserted} Teilnahme(n) gespeichert.")
         return redirect(f"{self.success_url}")
 
-class ParticipantsListView(ListView, LoginRequiredMixin):
+class ParticipantMixin(LoginRequiredMixin):
+    model = Ticket
+    success_url = reverse_lazy("participants_list")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            "title_singular": "Teilnehmer",
+            "title_plural": "Teilnehmer",
+            "cancel_url": self.success_url,
+        })
+        return context
+
+class ParticipantsListView(ListView, ParticipantMixin):
     template_name = "participants/participants_list.html"
     paginate_by = 10
     model = Participant
@@ -339,7 +352,7 @@ class ParticipantsListView(ListView, LoginRequiredMixin):
 
         qs_all = self.get_queryset()
         context["participants_total"] = qs_all.count()
-        context["participants_paid"] = qs_all.filter(paid_at__isnull=False).count()
+        context["participants_no_ticket"] = qs_all.filter(ticket__isnull=True).count()
 
         return context
 
