@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from typing import List, TypedDict
+from django.http import HttpRequest
+from django.urls import reverse_lazy
 
 
 class Tile(TypedDict):
@@ -17,40 +19,46 @@ class SectionItem(TypedDict):
     items: List[Tile]
 
 
-from django.http import HttpRequest
-from django.urls import reverse_lazy
-
-
 def navigation_tiles(request: HttpRequest) -> dict:
     user = getattr(request, "user", None)
 
+    # Nicht eingeloggt → nichts anzeigen
     if not getattr(user, "is_authenticated", False):
         return {"sections": []}
 
-    if not getattr(user, "is_staff", False):
-        return {"sections": []}
+    sections: List[SectionItem] = []
 
-    return {
-        "sections": [
+    # Für ALLE eingeloggten User
+    sections.append(
+        {
+            "section": "T & T",
+            "items": [
+                {
+                    "title": "Tickets",
+                    "description": "Alle Tickets anzeigen und nach Veranstaltung filtern.",
+                    "icon": "bi-ticket-perforated",
+                    "color": "text-primary",
+                    "url": reverse_lazy("tickets_list"),
+                    "nav": True,
+                },
+                {
+                    "title": "Teilnehmer",
+                    "description": "Alle Teilnehmer anzeigen und nach Veranstaltung filtern.",
+                    "icon": "bi-people-fill",
+                    "color": "text-primary",
+                    "url": reverse_lazy("participants_list"),
+                    "nav": True,
+                },
+            ],
+        }
+    )
+
+    # NUR für Staff
+    if getattr(user, "is_staff", False):
+        sections.append(
             {
                 "section": "Admin",
                 "items": [
-                    {
-                        "title": "Tickets",
-                        "description": "Alle Tickets anzeigen und nach Veranstaltung filtern.",
-                        "icon": "bi-ticket-perforated",
-                        "color": "text-primary",
-                        "url": reverse_lazy("tickets_list"),
-                        "nav": True,
-                    },
-                    {
-                        "title": "Teilnehmer",
-                        "description": "Alle Teilnehmer anzeigen und nach Veranstaltung filtern.",
-                        "icon": "bi-people-fill",
-                        "color": "text-primary",
-                        "url": reverse_lazy("participants_list"),
-                        "nav": True,
-                    },
                     {
                         "title": "CSV importieren",
                         "description": "CSV-Export vom Eventmanager importieren.",
@@ -69,5 +77,6 @@ def navigation_tiles(request: HttpRequest) -> dict:
                     },
                 ],
             }
-        ]
-    }
+        )
+
+    return {"sections": sections}
