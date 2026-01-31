@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     
     const PRICE_TICKET = 23;
-    const PRICE_NO_TICKET = 27;
+    const PRICE_NO_TICKET = 28;
     
     const form = document.querySelector('form');
     const priceContainer = document.getElementById('price-container');

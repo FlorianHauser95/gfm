@@ -302,7 +302,6 @@ class Participant(models.Model):
         max_digits=10,
         decimal_places=2,
         validators=[MinValueValidator(Decimal("0.00"))],
-        default=Decimal("23.00"),
         help_text="Gezahlter Betrag in EUR",
     )
 
