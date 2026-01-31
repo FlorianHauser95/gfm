@@ -23,7 +23,7 @@ db.sqlite3
 db.sqlite3-journal
 media/
 # Falls du statische Dateien lokal sammelst:
-static/
+staticfiles/
 # Aber NICHT die Quelldateien deiner Apps (meistens unter assets/ oder app/static/)
 
 # --- Vertrauliche Daten ---
