@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.db import models, transaction
+from django.db import models
 from django.db.models import OuterRef, Exists
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
@@ -252,7 +252,7 @@ class TicketParticipationView(LoginRequiredMixin, RequireAdminRoleMixin, View):
             if not t:
                 continue
 
-            p, created = Participant.objects.get_or_create(
+            Participant.objects.get_or_create(
                 ticket=t,
                 defaults={
                     "event_id": t.event_id,
@@ -262,14 +262,6 @@ class TicketParticipationView(LoginRequiredMixin, RequireAdminRoleMixin, View):
                     "amount": Decimal("23.00"),
                 }
             )
-            if not created:
-                p.event_id = t.event_id
-                p.email = email
-                if not p.name:
-                    p.name = source_ticket.name or email
-                p.paid_at = paid_at
-                p.amount = Decimal("23.00")
-                p.save(update_fields=["event", "email", "name", "paid_at", "amount", "updated_at"])
             upserted += 1
 
         # 2) No-ticket Teilnahmen
@@ -290,14 +282,8 @@ class TicketParticipationView(LoginRequiredMixin, RequireAdminRoleMixin, View):
                     name=source_ticket.name or email,
                     ticket=None,
                     paid_at=paid_at,
-                    amount=Decimal("23.00"),
+                    amount=Decimal("28.00"),
                 )
-            else:
-                p.paid_at = paid_at
-                p.amount = Decimal("23.00")
-                if not p.name:
-                    p.name = source_ticket.name or email
-                p.save(update_fields=["paid_at", "amount", "name", "updated_at"])
             upserted += 1
 
         messages.success(request, f"{upserted} Teilnahme(n) gespeichert.")
