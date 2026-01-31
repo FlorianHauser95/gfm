@@ -3,16 +3,6 @@
 
 {% block list_header_extra %}
 
-    {# Import-Button #}
-    {% if request.user.is_staff %}
-        <div class="d-flex justify-content-end mb-3">
-            <a href="{% url 'import' %}"
-               class="btn btn-primary">
-                Tickets importieren
-            </a>
-        </div>
-    {% endif %}
-
     {# Filter #}
     <div class="card mb-3">
         <div class="card-body">
@@ -26,37 +16,46 @@
 {% block create_url %}{% endblock %}
 
 {% block list_item_content %}
-    <div class="d-flex flex-column position-static">
-        <span class="fw-bold">
-            {# Die Klasse 'stretched-link' macht das gesamte Elternelement klickbar #}
+    <div class="d-flex flex-column position-static col-12 col-md-8">
+
+        <span class="fw-bold fs-5 mb-2">
             <a class="text-decoration-none stretched-link" href="{% url 'ticket_participation' item.ticket_uuid %}">
                 {{ item.name }}
             </a>
         </span>
 
-        <small class="text-muted">
-            {{ item.email }}
-            · {{ item.event.name }} ({{ item.event.date|date:"d.m.Y" }})
-        </small>
+        <div class="d-flex align-items-center text-muted small mb-1">
+            <i class="bi bi-envelope me-2" title="E-Mail"></i>
+            <span>{{ item.email }}</span>
+        </div>
+
+        <div class="d-flex align-items-center text-muted small mb-1">
+            <i class="bi bi-calendar-event me-2" title="Event & Datum"></i>
+            <span>{{ item.event.name }} ({{ item.event.date|date:"d.m.Y" }})</span>
+        </div>
 
         {% if item.comment %}
-            <small class="text-muted">
-                {{ item.comment|truncatechars:120 }}
-            </small>
+            <div class="d-flex align-items-start text-muted small mb-1">
+                <i class="bi bi-chat-text me-2 mt-1" title="Kommentar"></i>
+                <span class="fst-italic">{{ item.comment|truncatechars:120 }}</span>
+            </div>
         {% endif %}
 
-        <small class="text-muted">
-            UUID: <span class="font-monospace">{{ item.ticket_uuid }}</span>
-        </small>
+        <div class="d-flex align-items-center text-muted small">
+            <i class="bi bi-qr-code me-2" title="Ticket ID"></i>
+            <span class="font-monospace">{{ item.ticket_uuid }}</span>
+        </div>
     </div>
 
-    <div class="col-12 col-md-4 d-flex justify-content-md-end align-items-center" style="position: relative; z-index: 2;">
-        <div class="d-flex align-items-center justify-content-end w-100">
-            {% if item.is_paid %}
-                <span class="badge text-bg-success">Bezahlt</span>
-            {% else %}
-                <span class="badge text-bg-danger">Registriert</span>
-            {% endif %}
-        </div>
+    <div class="col-12 col-md-4 d-flex justify-content-md-end align-items-start mt-3 mt-md-0" style="position: relative; z-index: 2;">
+        {% if item.is_paid %}
+            <span class="badge rounded-pill text-bg-success d-flex align-items-center">
+                <i class="bi bi-check-circle-fill me-1"></i> Bezahlt
+            </span>
+        {% else %}
+            <span class="badge rounded-pill text-bg-danger d-flex align-items-center">
+                <i class="bi bi-exclamation-circle-fill me-1"></i> Registriert
+            </span>
+        {% endif %}
     </div>
 {% endblock %}

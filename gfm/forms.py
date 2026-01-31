@@ -43,14 +43,12 @@ class TicketFilterForm(forms.Form):
             Row(
                 Column("event", css_class="col-12 col-md-5"),
                 Column("q", css_class="col-12 col-md-4"),
-                css_class="g-3",
             ),
             Row(
                 Column(
                     Submit("submit", "Filtern", css_class="btn btn-primary"),
                     css_class="col-12 d-flex justify-content-end",
                 ),
-                css_class="mt-3",
             ),
         )
 

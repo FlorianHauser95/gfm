@@ -197,7 +197,6 @@ class UserAdmin(DjangoUserAdmin):
     list_filter = ("is_active", "groups")
     search_fields = ("email", "first_name", "last_name")
     ordering = ("last_name", "first_name")
-    list_select_related = ("program",)
     filter_horizontal = ("groups", "user_permissions")
 
     fieldsets = (

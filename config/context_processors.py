@@ -44,6 +44,14 @@ def navigation_tiles(request: HttpRequest) -> dict:
                         "nav": True,
                     },
                     {
+                        "title": "CSV importieren",
+                        "description": "CSV-Export vom Eventmanager importieren.",
+                        "icon": "bi-cloud-upload",
+                        "color": "text-primary",
+                        "url": reverse_lazy("import"),
+                        "nav": True,
+                    },
+                    {
                         "title": "Django Admin",
                         "description": "Direkter Zugriff auf das Admin Interface.",
                         "icon": "bi-gear-fill",
