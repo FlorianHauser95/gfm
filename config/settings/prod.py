@@ -6,7 +6,7 @@ ALLOWED_HOSTS = ["grubhebtab.de","www.grubhebtab.de"]
 
 # Django läuft unter /app/
 FORCE_SCRIPT_NAME = "/gfm"
-STATIC_URL = "/static/"
+STATIC_URL = "gfm/static/"
 STATIC_ROOT = "/srv/django/gfm/staticfiles"
 
 # Reverse Proxy / SSL
