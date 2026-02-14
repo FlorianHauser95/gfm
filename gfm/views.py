@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db import models
-from django.db.models import OuterRef, Exists, Sum, Count, DecimalField
+from django.db.models import OuterRef, Exists, Sum, Count, DecimalField, Subquery
 from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
@@ -397,13 +397,14 @@ class ParticipantNoTicketCreateView(CreateView, LoginRequiredMixin):
         return f"{reverse_lazy('participants_list')}?event={event_id}"
 
 
-class AnalyticsDashboardView(TemplateView, LoginRequiredMixin):
+class AnalyticsDashboardView(TemplateView):
     template_name = "analytics/dashboard.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
         # 1. Globale KPIs
+        # Hier ist Aggregation sicher, da wir direkt auf Participant zugreifen
         total_revenue = Participant.objects.aggregate(
             sum=Coalesce(Sum('amount'), 0, output_field=DecimalField())
         )['sum']
@@ -411,15 +412,12 @@ class AnalyticsDashboardView(TemplateView, LoginRequiredMixin):
         count_tickets = Ticket.objects.count()
         count_participants = Participant.objects.count()
 
-        # --- NEU: RABATT BERECHNUNG ---
+        # --- RABATT LOGIK ---
         total_events_count = Event.objects.count()
-
         discount_volume = 0
         eligible_count = 0
 
         if total_events_count > 0:
-            # Wir gruppieren nach Email und zählen die Events pro Email
-            # Filter: Nur die, deren Event-Anzahl == Gesamtanzahl Events ist
             full_series_participants = Participant.objects.values('email').annotate(
                 events_booked=Count('event', distinct=True)
             ).filter(events_booked=total_events_count)
@@ -427,58 +425,68 @@ class AnalyticsDashboardView(TemplateView, LoginRequiredMixin):
             eligible_count = full_series_participants.count()
             discount_volume = eligible_count * 23
 
-        # Bereinigter Umsatz (Falls der Rabatt noch nicht im 'amount' abgezogen wurde)
-        # Wenn 'amount' in der DB der volle Preis ist, müssen wir den Rabatt hier abziehen.
-        adjusted_revenue = total_revenue - Decimal(discount_volume)
-        # ------------------------------
-
-        # ... (Rest deines Codes: Orphans, Unpaid, Events-Liste, Charts) ...
-        # (Hier der Code von vorhin für orphans, unpaid, events_qs, chart_data etc.)
+        adjusted_revenue = total_revenue - discount_volume
+        # --------------------
 
         orphaned_participants = Participant.objects.filter(ticket__isnull=True).count()
         unpaid_tickets = Ticket.objects.filter(participant__isnull=True).count()
 
+        # 2. Event-basierte Auswertung mit SUBQUERIES (Der Fix)
+        # Wir definieren isolierte Abfragen für jede Metrik, damit sie sich nicht multiplizieren.
+
+        # A) Subquery für Teilnehmer-Umsatz pro Event
+        revenue_subquery = Participant.objects.filter(
+            event=OuterRef('pk')
+        ).values('event').annotate(
+            total=Sum('amount')
+        ).values('total')
+
+        # B) Subquery für Teilnehmer-Anzahl
+        participants_subquery = Participant.objects.filter(
+            event=OuterRef('pk')
+        ).values('event').annotate(
+            cnt=Count('pk')
+        ).values('cnt')
+
+        # C) Subquery für Ticket-Anzahl
+        tickets_subquery = Ticket.objects.filter(
+            event=OuterRef('pk')
+        ).values('event').annotate(
+            cnt=Count('pk')
+        ).values('cnt')
+
+        # D) Hauptabfrage: Wir kleben die Subqueries an das Event
         events_qs = Event.objects.annotate(
-            tickets_count=Count('tickets', distinct=True),
-            participants_count=Count('participants', distinct=True),
-            revenue=Coalesce(Sum('participants__amount'), 0, output_field=DecimalField())
+            revenue=Coalesce(Subquery(revenue_subquery, output_field=DecimalField()), 0, output_field=DecimalField()),
+            participants_count=Coalesce(Subquery(participants_subquery), 0),
+            tickets_count=Coalesce(Subquery(tickets_subquery), 0)
         ).order_by('-date')
 
-        # ... Chart Logic ...
-        # (Den Chart Code hier unverändert lassen oder anpassen)
+        # 3. Daten für Chart.js
+        chart_events = events_qs.order_by('date')
 
-        # Context Update
+        labels = [e.date.strftime('%d.%m.%Y') + f" ({e.name[:15]}...)" for e in chart_events]
+        data_revenue = [float(e.revenue) for e in chart_events]
+        data_tickets = [e.tickets_count for e in chart_events]
+        data_participants = [e.participants_count for e in chart_events]
+
         context.update({
             "kpi": {
                 "revenue": total_revenue,
-                "adjusted_revenue": adjusted_revenue,  # Neuer KPI
-                "discount_volume": discount_volume,  # Neuer KPI
-                "eligible_count": eligible_count,  # Neuer KPI
+                "adjusted_revenue": adjusted_revenue,
+                "discount_volume": discount_volume,
+                "eligible_count": eligible_count,
                 "tickets": count_tickets,
                 "participants": count_participants,
                 "orphans": orphaned_participants,
                 "unpaid": unpaid_tickets,
             },
             "events": events_qs,
-            # ... chart_data ...
             "chart_data": json.dumps({
-                # ... deine chart daten ...
-                "labels": [], "revenue": [], "tickets": [], "participants": []
+                "labels": labels,
+                "revenue": data_revenue,
+                "tickets": data_tickets,
+                "participants": data_participants
             })
         })
-
-        # FIX für Chart Data (damit der Code vollständig bleibt):
-        chart_events = events_qs.order_by('date')
-        labels = [e.date.strftime('%d.%m.%Y') + f" ({e.name[:15]}...)" for e in chart_events]
-        data_revenue = [float(e.revenue) for e in chart_events]
-        data_tickets = [e.tickets_count for e in chart_events]
-        data_participants = [e.participants_count for e in chart_events]
-
-        context["chart_data"] = json.dumps({
-            "labels": labels,
-            "revenue": data_revenue,
-            "tickets": data_tickets,
-            "participants": data_participants
-        })
-
         return context
