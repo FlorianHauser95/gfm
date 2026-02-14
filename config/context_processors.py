@@ -49,6 +49,14 @@ def navigation_tiles(request: HttpRequest) -> dict:
                     "url": reverse_lazy("participants_list"),
                     "nav": True,
                 },
+                {
+                    "title": "Dashboard",
+                    "description": "Umsatz, KPIs und Auslastung.",
+                    "icon": "bi-speedometer2",
+                    "color": "text-info",
+                    "url": reverse_lazy("analytics_dashboard"),
+                    "nav": True,
+                },
             ],
         }
     )

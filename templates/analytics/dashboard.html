@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Dashboard | GFM{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+        <h1 class="h3">Event Auswertung</h1>
+        <span class="text-muted small">Stand: {% now "d.m.Y H:i" %}</span>
+    </div>
+</div>
+
+<div class="row g-3 mb-5">
+    <div class="col-md-6 col-lg-3">
+        <div class="card border-success border-start border-4 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <h6 class="text-muted text-uppercase mb-1 small">Gesamtumsatz</h6>
+                        <h2 class="mb-0 text-success">{{ kpi.revenue|floatformat:2 }} €</h2>
+
+                        {% if kpi.discount_volume > 0 %}
+                        <div class="mt-2 pt-2 border-top me-2">
+                            <div class="d-flex justify-content-between text-danger small" title="{{ kpi.eligible_count }} Personen haben alle Events besucht">
+                                <span>
+                                    <i class="bi bi-percent"></i> Rabatte:
+                                </span>
+                                <span>-{{ kpi.discount_volume|floatformat:2 }} €</span>
+                            </div>
+                            <div class="d-flex justify-content-between fw-bold text-dark mt-1 small">
+                                <span>Netto:</span>
+                                <span>{{ kpi.adjusted_revenue|floatformat:2 }} €</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                        </div>
+                    <div class="text-success opacity-50"><i class="bi bi-currency-euro fs-1"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+        <div class="card border-primary border-start border-4 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted text-uppercase mb-1 small">Bezahlte Teilnehmer</h6>
+                        <h2 class="mb-0 text-primary">{{ kpi.participants }}</h2>
+                    </div>
+                    <div class="text-primary opacity-50"><i class="bi bi-person-check fs-1"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+        <div class="card border-secondary border-start border-4 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted text-uppercase mb-1 small">Tickets Generiert</h6>
+                        <h2 class="mb-0 text-secondary">{{ kpi.tickets }}</h2>
+                    </div>
+                    <div class="text-secondary opacity-50"><i class="bi bi-ticket-perforated fs-1"></i></div>
+                </div>
+                <div class="mt-2 small text-muted">
+                    Davon noch unbezahlt: <strong>{{ kpi.unpaid }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+        <div class="card border-warning border-start border-4 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted text-uppercase mb-1 small">Nicht Verknüpft</h6>
+                        <h2 class="mb-0 text-warning">{{ kpi.orphans }}</h2>
+                    </div>
+                    <div class="text-warning opacity-50"><i class="bi bi-exclamation-triangle fs-1"></i></div>
+                </div>
+                <div class="mt-2 small text-muted">
+                    Zahler ohne Ticket-Match
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-5">
+    <div class="card-header bg-white">
+        <h5 class="card-title mb-0">Umsatz & Auslastung Verlauf</h5>
+    </div>
+    <div class="card-body">
+        <canvas id="analyticsChart" style="max-height: 400px;"></canvas>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white">
+        <h5 class="card-title mb-0">Details pro Veranstaltung</h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Datum</th>
+                    <th>Veranstaltung</th>
+                    <th class="text-center">Tickets</th>
+                    <th class="text-center">Teilnehmer</th>
+                    <th class="text-end">Umsatz</th>
+                    <th class="text-center">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for event in events %}
+                <tr>
+                    <td class="text-nowrap">{{ event.date|date:"d.m.Y" }}</td>
+                    <td class="fw-bold">{{ event.name }}</td>
+
+                    <td class="text-center">
+                        <span class="badge bg-light text-dark border">{{ event.tickets_count }}</span>
+                    </td>
+
+                    <td class="text-center">
+                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary">{{ event.participants_count }}</span>
+                    </td>
+
+                    <td class="text-end font-monospace fw-bold text-success">
+                        {{ event.revenue|floatformat:2 }} €
+                    </td>
+
+                    <td class="text-center">
+                        {% if event.tickets_count == 0 and event.participants_count == 0 %}
+                            <span class="badge bg-secondary">Leer</span>
+                        {% elif event.participants_count < event.tickets_count %}
+                            <span class="badge bg-warning text-dark" title="Mehr Tickets als Zahlungen">Offen</span>
+                        {% elif event.participants_count > event.tickets_count %}
+                            <span class="badge bg-danger" title="Mehr Zahlungen als Tickets (Fehler?)">Prüfen</span>
+                        {% else %}
+                            <span class="badge bg-success"><i class="bi bi-check-lg"></i> OK</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">Keine Veranstaltungen gefunden.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const ctx = document.getElementById('analyticsChart').getContext('2d');
+        const chartData = JSON.parse('{{ chart_data|escapejs }}');
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: chartData.labels,
+                datasets: [
+                    {
+                        label: 'Umsatz (€)',
+                        data: chartData.revenue,
+                        backgroundColor: 'rgba(25, 135, 84, 0.2)', // Success color transparent
+                        borderColor: 'rgba(25, 135, 84, 1)',
+                        borderWidth: 1,
+                        yAxisID: 'y',
+                        order: 2
+                    },
+                    {
+                        label: 'Teilnehmer (Bezahlt)',
+                        data: chartData.participants,
+                        type: 'line',
+                        borderColor: 'rgba(13, 110, 253, 1)', // Primary color
+                        backgroundColor: 'rgba(13, 110, 253, 1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        pointRadius: 4,
+                        yAxisID: 'y1',
+                        order: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: { display: true, text: 'Umsatz (€)' },
+                        beginAtZero: true
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        grid: { drawOnChartArea: false },
+                        title: { display: true, text: 'Anzahl Personen' },
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap5',
     'gfm',
+    'django.contrib.humanize'
 ]
 
 AUTH_USER_MODEL = "gfm.User"
